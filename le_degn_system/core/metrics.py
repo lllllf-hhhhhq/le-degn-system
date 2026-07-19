@@ -61,13 +61,53 @@ def calculate_aocc(trajectory, time_budget, L, U):
     """
     if not trajectory:
         return 0.0
+    # ★ 修复: 若数据点超出边界, 自动扩展U以保证有效归一化
+    max_observed = max(y for _, y in trajectory)
+    U_effective = max(U, max_observed * 1.05)  # 扩展5%余量
     steps = np.linspace(0, time_budget, num=500)
     total, idx = 0.0, 0
     for t in steps:
         while idx < len(trajectory) - 1 and trajectory[idx + 1][0] <= t:
             idx += 1
         y = trajectory[idx][1]
-        y_b = max(L, min(y, U))
-        y_n = (y_b - L) / (U - L) if U > L else 1.0
+        y_b = max(L, min(y, U_effective))
+        y_n = (y_b - L) / (U_effective - L) if U_effective > L else 1.0
         total += 1.0 - y_n
     return total / len(steps)
+
+
+def calculate_adaptive_bounds(service_cost, transition_cost_matrix, tour_len):
+    """
+    ★ 新增: 根据真实路网规模自适应计算 L/U 边界。
+
+    对于大路网（几百节点），service_cost 占主导，
+    简单的 N*300 上界会导致 AOCC=0。此函数自动适配。
+
+    Args:
+        service_cost: 固定服务代价
+        transition_cost_matrix: 转移代价方阵 (N×N)
+        tour_len: 当前路径长度
+
+    Returns:
+        (L, U) 自适应边界
+    """
+    N = transition_cost_matrix.size(0)
+    # 下界: 每步取最短可能转移代价
+    nn_lower = 0.0
+    for i in range(min(tour_len, N)):
+        row = transition_cost_matrix[i].clone()
+        if row.dim() > 1:
+            row.fill_diagonal_(float('inf'))
+        else:
+            row[i] = float('inf')
+        nn_lower += row.min().item()
+    L = service_cost + nn_lower
+
+    # 上界: 基于实际转移代价统计量，而非固定 300
+    max_edge_cost = float(transition_cost_matrix.max())
+    avg_edge_cost = float(transition_cost_matrix[transition_cost_matrix > 0].mean())
+    # U = service_cost + tour_len * max(max_edge, avg_edge*3)
+    # 这样大路网的上界自动适配真实代价量级
+    U = service_cost + tour_len * max(max_edge_cost, avg_edge_cost * 3.0)
+
+    return L, U

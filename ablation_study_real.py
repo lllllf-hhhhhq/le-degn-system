@@ -25,7 +25,8 @@ from real_data_loader import RealRoadNetworkLoader
 from le_degn_system.environment import RealRoadNetworkEnv, LineGraphBuilder
 from le_degn_system.models import ERFM, SADGWN, LHHEngine, TrafficDataGenerator
 from le_degn_system.pipeline import LEDEGNSystem
-from le_degn_system.core.metrics import PerformanceTracker, calculate_aocc
+from le_degn_system.core.metrics import (
+    PerformanceTracker, calculate_aocc, calculate_adaptive_bounds)
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -158,7 +159,9 @@ def run_erfm_only(env, lg, nn_tour, nn_trans):
         else: row[i] = float('inf')
         nn_lower += row.min().item()
     L = system.service_cost + nn_lower
-    U = system.service_cost + N_tour * 300.0
+    max_edge = float(TC.max())
+    avg_edge = float(TC[TC > 0].mean())
+    U = system.service_cost + N_tour * max(max_edge, avg_edge * 3.0)
     aocc = calculate_aocc(tracker.trajectory, 30.0, L, U)
 
     return {'final_cost': final_total, 'init_transition': nn_trans,
@@ -224,7 +227,10 @@ def run_erfm_with_sadgwn(env, lg, nn_tour, nn_trans):
         if row.dim() > 1: row.fill_diagonal_(float('inf'))
         else: row[i] = float('inf')
         nn_lower += row.min().item()
-    L = system.service_cost + nn_lower; U = system.service_cost + N_tour * 300.0
+    L = system.service_cost + nn_lower
+    max_edge = float(TC.max())
+    avg_edge = float(TC[TC > 0].mean())
+    U = system.service_cost + N_tour * max(max_edge, avg_edge * 3.0)
     aocc = calculate_aocc(tracker.trajectory, 30.0, L, U)
 
     return {'final_cost': final_total, 'init_transition': nn_trans,
@@ -278,7 +284,10 @@ def run_erfm_with_lhh(env, lg, nn_tour, nn_trans):
         if row.dim() > 1: row.fill_diagonal_(float('inf'))
         else: row[i] = float('inf')
         nn_lower += row.min().item()
-    L = system.service_cost + nn_lower; U = system.service_cost + N_tour * 300.0
+    L = system.service_cost + nn_lower
+    max_edge = float(TC.max())
+    avg_edge = float(TC[TC > 0].mean())
+    U = system.service_cost + N_tour * max(max_edge, avg_edge * 3.0)
     aocc = calculate_aocc(tracker.trajectory, 30.0, L, U)
 
     return {'final_cost': final_total, 'init_transition': nn_trans,

@@ -129,18 +129,36 @@ class LEDEGNSystem:
         return path
 
     def predict_congestion(self, history_steps=12):
-        """使用 SA-DGWN 预测拥堵蔓延。"""
+        """使用 SA-DGWN 预测拥堵蔓延。
+
+        ★ 修复: 使用真实路网属性生成可学习的拥堵模式。
+        速度因子低/拥堵概率高的边更可能出现拥堵。
+        SA-DGWN 可以学到"拥堵概率高 → 高风险"的关联。
+        """
+        if self.stgcn is None:
+            return torch.zeros(self.lg.num_line_nodes())
         N = self.lg.num_line_nodes()
         T, F = history_steps, 2
         x = torch.zeros(N, T, F)
         for i in range(N):
             if i not in self.lg.lid2edge:
                 continue
-            u, v = self.lg.lid2edge[i][0], self.lg.lid2edge[i][1]
+            u, v, k, _ = self.lg.lid2edge[i]
             is_blocked = (u, v) in self.env.closed_edges
+            # 从真实路网属性获取拥堵风险信号
+            edge_attrs = self.env.G[u][v][k] if (u, v) in self.env.G else {}
+            speed_factor = edge_attrs.get('speed_factor', 0.8)
+            congestion_prob = edge_attrs.get('congestion_prob', 0.3)
+
             for t in range(T):
-                x[i, t, 0] = 0.1 if is_blocked else 0.8 + random.gauss(0, 0.05)
-                x[i, t, 1] = 0.9 if is_blocked else 0.3 + random.gauss(0, 0.05)
+                # 速度信号: 低速度因子 + 拥堵概率 → 高风险
+                base_signal = 0.9 - speed_factor * 0.4  # [0.42, 0.66]
+                risk_signal = min(0.95, base_signal + congestion_prob * 0.5)
+                x[i, t, 0] = 0.05 if is_blocked else 0.85 + random.gauss(0, 0.03)
+                # 拥堵信号: 拥堵概率高且速度因子低的边更容易拥堵
+                x[i, t, 1] = 0.95 if is_blocked else (
+                    0.2 + congestion_prob * 0.6 - speed_factor * 0.1
+                    + random.gauss(0, 0.03))
         self.stgcn.eval()
         with torch.no_grad():
             return self.stgcn(x, self.lg.adj)
