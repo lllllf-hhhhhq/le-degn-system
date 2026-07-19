@@ -1245,7 +1245,7 @@ class LEDEGNSystem:
         return blocked
 
     def execute_dynamic(self, time_budget=10.0, congestion_events=None,
-                        verbose=True):
+                        verbose=True, initial_tour=None):
         tracker = PerformanceTracker(time_budget)
         log = []
         if verbose:
@@ -1253,42 +1253,46 @@ class LEDEGNSystem:
             print("LE-DEGN 动态路径优化系统启动")
             print("="*60)
 
-        # Phase 1
-        if verbose: print("\n[Phase 1] 初始路径构建...")
-
-        # ★ 修复: 先用贪心最近邻构建初始路径（与Baseline相同起点），再用ERFM改进
-        TC = self.lg.transition_cost
-        N = self.lg.num_line_nodes()
-        available_nn = list(range(N))
-        max_nn = min(len(available_nn), 120)
-        if len(available_nn) > max_nn:
-            available_nn = random.sample(available_nn, max_nn)
-        nn_best_tour, nn_best_trans = None, float('inf')
-        starts = random.sample(available_nn, min(5, len(available_nn)))
-        for start in starts:
-            unvisited = set(available_nn)
-            cur = start
-            unvisited.remove(cur)
-            nn_tour = [cur]
-            while unvisited:
-                nearest, min_c = None, float('inf')
-                for nb in unvisited:
-                    c = TC[cur, nb].item()
-                    if c < min_c:
-                        min_c, nearest = c, nb
-                if nearest is None:
-                    break
-                nn_tour.append(nearest)
-                unvisited.remove(nearest)
-                cur = nearest
-            nn_trans = sum(TC[nn_tour[i], nn_tour[i + 1]].item()
-                           for i in range(len(nn_tour) - 1))
-            if len(nn_tour) > 1:
-                nn_trans += TC[nn_tour[-1], nn_tour[0]].item()
-            if nn_trans < nn_best_trans:
-                nn_best_trans, nn_best_tour = nn_trans, list(nn_tour)
-        init_trans = nn_best_trans
-        tour = list(nn_best_tour)
+        # Phase 1: 初始路径（支持外部传入，确保消融一致性）
+        if initial_tour is not None:
+            if verbose: print("\n[Phase 1] 使用外部初始路径...")
+            tour = list(initial_tour)
+            init_trans = self._tour_transition_cost(tour)
+        else:
+            if verbose: print("\n[Phase 1] 初始路径构建...")
+            # 贪心最近邻构建初始路径（与Baseline相同起点）
+            TC = self.lg.transition_cost
+            N = self.lg.num_line_nodes()
+            available_nn = list(range(N))
+            max_nn = min(len(available_nn), 120)
+            if len(available_nn) > max_nn:
+                available_nn = random.sample(available_nn, max_nn)
+            nn_best_tour, nn_best_trans = None, float('inf')
+            starts = random.sample(available_nn, min(5, len(available_nn)))
+            for start in starts:
+                unvisited = set(available_nn)
+                cur = start
+                unvisited.remove(cur)
+                nn_tour = [cur]
+                while unvisited:
+                    nearest, min_c = None, float('inf')
+                    for nb in unvisited:
+                        c = TC[cur, nb].item()
+                        if c < min_c:
+                            min_c, nearest = c, nb
+                    if nearest is None:
+                        break
+                    nn_tour.append(nearest)
+                    unvisited.remove(nearest)
+                    cur = nearest
+                nn_trans = sum(TC[nn_tour[i], nn_tour[i + 1]].item()
+                               for i in range(len(nn_tour) - 1))
+                if len(nn_tour) > 1:
+                    nn_trans += TC[nn_tour[-1], nn_tour[0]].item()
+                if nn_trans < nn_best_trans:
+                    nn_best_trans, nn_best_tour = nn_trans, list(nn_tour)
+            init_trans = nn_best_trans
+            tour = list(nn_best_tour)
         node_path = self.tour_to_node_path(tour)
         total_cost = self.service_cost + init_trans
         tracker.update(total_cost)

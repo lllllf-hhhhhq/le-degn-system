@@ -1,29 +1,42 @@
 {
   "full": {
     "name": "Full LE-DEGN",
-    "final_cost": 25891.483100683752,
-    "init_transition": 12613.90763092041,
-    "final_transition": 11780.13092803955,
-    "aocc": 0.6562493730882801,
+    "final_cost": 28276.90077951676,
+    "init_transition": 10949.714637756348,
+    "final_transition": 14165.548606872559,
+    "aocc": 0.7019807847520965,
     "escape_count": 3,
-    "service_cost": 14111.352172644201
-  },
-  "erfm_only": {
-    "name": "ERFM-only",
-    "final_cost": 55549.584457190096,
-    "init_transition": 41438.2322845459,
-    "final_transition": 41438.2322845459,
-    "aocc": 0,
-    "escape_count": 0,
+    "replan_count": 0,
     "service_cost": 14111.352172644201
   },
   "erfm_lhh": {
-    "name": "ERFM+LHH",
-    "final_cost": 28247.244621069494,
-    "init_transition": 68294.73023986816,
-    "final_transition": 14135.892448425293,
-    "aocc": 0.3995666753235679,
+    "name": "ERFM + LHH",
+    "final_cost": 26461.25337198502,
+    "init_transition": 10949.714637756348,
+    "final_transition": 12349.90119934082,
+    "aocc": 0.704622148617415,
     "escape_count": 3,
+    "replan_count": 3,
+    "service_cost": 14111.352172644201
+  },
+  "erfm_sadgwn": {
+    "name": "ERFM + SA-DGWN",
+    "final_cost": 25890.188895971838,
+    "init_transition": 10949.714637756348,
+    "final_transition": 11778.836723327637,
+    "aocc": 0.6727137986971294,
+    "escape_count": 0,
+    "replan_count": 3,
+    "service_cost": 14111.352172644201
+  },
+  "erfm_only": {
+    "name": "ERFM only (baseline)",
+    "final_cost": 29765.8418500734,
+    "init_transition": 10949.714637756348,
+    "final_transition": 15654.4896774292,
+    "aocc": 0.7147354232847697,
+    "escape_count": 0,
+    "replan_count": 0,
     "service_cost": 14111.352172644201
   }
 }
