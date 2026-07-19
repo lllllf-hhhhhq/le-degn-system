@@ -1,6 +1,0 @@
-Road_Type,Speed_Factor,Congestion_Prob,Time_Window_Start,Time_Window_End,Characteristic
-Main_Road,1.2,0.2,0,1440,"High speed, low congestion"
-Commercial_Pedestrian,0.5,0.4,0,1440,"Low speed, moderate congestion"
-School_Zone,0.6,0.5,540,1020,"Moderate speed, high congestion in peak hours"
-Residential,0.7,0.3,0,1440,"Moderate speed, low congestion"
-Construction,0.3,0.8,0,1440,"Very low speed, high congestion"
