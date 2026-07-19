@@ -266,3 +266,77 @@ class ERFMTrainer:
         if best_params: self.model.load_state_dict(best_params)
         print(f"[ERFM] 训练完成, 最优转移成本={best_cost:.1f}")
         return best_cost
+
+    def _adaptive_train(self, episodes=100, temp_start=1.5, temp_end=0.2,
+                         patience=10, warmup=20):
+        """
+        自适应温度训练: 基于 cost 改善率动态调整温度。
+        - 若连续 patience 个 episode 无改善, 升高温度增加探索
+        - 若持续改善, 降低温度加速收敛
+        """
+        print("[ERFM] 自适应温度训练 (Adaptive Temperature)...")
+        global_attrs = torch.tensor([5.0/25.0, 1.5, 7.0, 0.5], dtype=torch.float32)
+        best_cost, best_params = float('inf'), None
+        temp = temp_start
+        no_improve = 0
+
+        for ep in range(episodes):
+            if ep < warmup:
+                # warmup 阶段: 线性退火
+                temp = temp_start + (ep/warmup) * (0.5 - temp_start)
+            else:
+                # 自适应阶段
+                if no_improve >= patience:
+                    temp = min(1.5, temp * 1.3)  # 升高温度探索
+                    no_improve = 0
+                else:
+                    temp = max(0.1, temp * 0.95)  # 缓慢降温
+
+            self.model.train()
+            embeddings = self.model.encode(self.lg.node_features,
+                                           self.lg.penalty_matrix, global_attrs)
+            tour, log_probs, values, entropies = self._rollout(embeddings, temp)
+            if not tour or not log_probs: continue
+            cost = self._tour_cost(tour)
+            prev_best = best_cost
+            if cost < best_cost:
+                best_cost = cost
+                best_params = copy.deepcopy(self.model.state_dict())
+                no_improve = 0
+            else:
+                no_improve += 1
+
+            # REINFORCE 更新（与 train() 一致）
+            reward = -cost / max(self.fixed_cost * 0.1, 1.0)
+            returns = []
+            G = 0
+            for _ in range(len(log_probs)):
+                G = self.gamma * G + reward
+                returns.insert(0, G)
+            returns_t = torch.tensor(returns, dtype=torch.float32)
+            values_t = torch.stack([v.squeeze() for v in values])
+            if values_t.dim() == 0: values_t = values_t.unsqueeze(0)
+            min_len = min(len(returns_t), len(values_t))
+            returns_t, values_t = returns_t[:min_len], values_t[:min_len]
+            advantage = returns_t - values_t.detach()
+            if advantage.numel() > 1 and advantage.std() > 1e-8:
+                advantage = (advantage - advantage.mean()) / (advantage.std() + 1e-8)
+            lp = torch.stack(log_probs[:min_len])
+            ent = torch.stack(entropies[:min_len])
+            policy_loss = -(lp * advantage).mean()
+            value_loss = F.mse_loss(values_t, returns_t)
+            entropy_loss = -ent.mean()
+            loss = policy_loss + 0.5 * value_loss + self.entropy_coef * entropy_loss
+            self.optimizer.zero_grad()
+            loss.backward()
+            nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
+            self.optimizer.step()
+
+            if (ep + 1) % max(1, episodes // 5) == 0:
+                print(f"  ep {ep+1}/{episodes}  trans_cost={cost:.1f}  "
+                      f"best={best_cost:.1f}  temp={temp:.2f}  "
+                      f"no_impr={no_improve}")
+
+        if best_params: self.model.load_state_dict(best_params)
+        print(f"[ERFM] 自适应训练完成, 最优转移成本={best_cost:.1f}")
+        return best_cost
