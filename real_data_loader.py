@@ -223,12 +223,34 @@ class RealRoadNetworkLoader:
         place = self.district if self.district else self.city
         print(f"[RealRoadNetworkLoader] 正在从 OSM 加载路网: {place} ...", flush=True)
 
+        # 常见中国城市坐标（用于绕过 Nominatim geocoding）
+        CITY_COORDS = {
+            '上海': (31.2304, 121.4737),
+            'shanghai': (31.2304, 121.4737),
+            '北京': (39.9042, 116.4074),
+            'beijing': (39.9042, 116.4074),
+            '深圳': (22.5431, 114.0579),
+            'shenzhen': (22.5431, 114.0579),
+            '成都': (30.5728, 104.0668),
+            'chengdu': (30.5728, 104.0668),
+            '广州': (23.1291, 113.2644),
+            'guangzhou': (23.1291, 113.2644),
+        }
+        place_lower = place.lower()
+
         try:
             if self.radius is not None:
-                # ---- 半径模式: 先 geocode 获取中心坐标 ----
-                gdf = ox.geocode_to_gdf(place)
-                center_lat = float(gdf.geometry.centroid.y.iloc[0])
-                center_lng = float(gdf.geometry.centroid.x.iloc[0])
+                # ---- 半径模式: 优先用预设坐标，绕过 Nominatim ----
+                center_lat, center_lng = None, None
+                for key, coords in CITY_COORDS.items():
+                    if key in place_lower:
+                        center_lat, center_lng = coords
+                        break
+                if center_lat is None:
+                    # 回退到 geocode
+                    gdf = ox.geocode_to_gdf(place)
+                    center_lat = float(gdf.geometry.centroid.y.iloc[0])
+                    center_lng = float(gdf.geometry.centroid.x.iloc[0])
                 print(f"  中心坐标: ({center_lat:.4f}, {center_lng:.4f}), "
                       f"半径={self.radius}m")
 
@@ -239,12 +261,27 @@ class RealRoadNetworkLoader:
                     simplify=True,
                 )
             else:
-                # ---- 区域模式: 直接按地名提取 ----
-                self._raw_graph = ox.graph_from_place(
-                    place,
-                    network_type=self.network_type,
-                    simplify=True,
-                )
+                # ---- 区域模式: 直接用坐标提取多边形区域 ----
+                center_lat, center_lng = None, None
+                for key, coords in CITY_COORDS.items():
+                    if key in place_lower:
+                        center_lat, center_lng = coords
+                        break
+                if center_lat is not None:
+                    # 用坐标点 + 大半径代替 geocode 的 polygon 模式
+                    self._raw_graph = ox.graph_from_point(
+                        (center_lat, center_lng),
+                        dist=5000,  # 默认5km
+                        network_type=self.network_type,
+                        simplify=True,
+                    )
+                    print(f"  使用预设坐标 ({center_lat:.4f}, {center_lng:.4f}), 半径=5000m")
+                else:
+                    self._raw_graph = ox.graph_from_place(
+                        place,
+                        network_type=self.network_type,
+                        simplify=True,
+                    )
 
         except Exception as e:
             raise RuntimeError(
