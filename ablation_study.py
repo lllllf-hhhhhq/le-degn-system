@@ -181,10 +181,18 @@ def main():
         ('ERFM+LHH', 'erfm_lhh'),
     ]
     
+    # ★ 修复: 所有配置共享同一个路网，确保公平对比
+    base_env = RoadNetworkEnv(node_count=60)
+    base_lg = LineGraphBuilder(base_env)
+    base_lg.build()
+    base_service_cost = base_lg.transition_cost.size(0)  # 仅用于验证Service Cost一致
+
     for name, config_type in configs:
         print(f"\n[Testing] {name}")
         
-        env = RoadNetworkEnv(node_count=60)
+        # 复制路网结构以保证每个配置使用相同的拓扑
+        import copy
+        env = copy.deepcopy(base_env)
         lg = LineGraphBuilder(env)
         lg.build()
         

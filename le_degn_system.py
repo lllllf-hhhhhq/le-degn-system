@@ -1254,16 +1254,48 @@ class LEDEGNSystem:
             print("="*60)
 
         # Phase 1
-        if verbose: print("\n[Phase 1] ERFM 全局路径规划...")
-        tour = self.plan_global_route(tracker, temperature=0.5)
+        if verbose: print("\n[Phase 1] 初始路径构建...")
+
+        # ★ 修复: 先用贪心最近邻构建初始路径（与Baseline相同起点），再用ERFM改进
+        TC = self.lg.transition_cost
+        N = self.lg.num_line_nodes()
+        available_nn = list(range(N))
+        max_nn = min(len(available_nn), 120)
+        if len(available_nn) > max_nn:
+            available_nn = random.sample(available_nn, max_nn)
+        nn_best_tour, nn_best_trans = None, float('inf')
+        starts = random.sample(available_nn, min(5, len(available_nn)))
+        for start in starts:
+            unvisited = set(available_nn)
+            cur = start
+            unvisited.remove(cur)
+            nn_tour = [cur]
+            while unvisited:
+                nearest, min_c = None, float('inf')
+                for nb in unvisited:
+                    c = TC[cur, nb].item()
+                    if c < min_c:
+                        min_c, nearest = c, nb
+                if nearest is None:
+                    break
+                nn_tour.append(nearest)
+                unvisited.remove(nearest)
+                cur = nearest
+            nn_trans = sum(TC[nn_tour[i], nn_tour[i + 1]].item()
+                           for i in range(len(nn_tour) - 1))
+            if len(nn_tour) > 1:
+                nn_trans += TC[nn_tour[-1], nn_tour[0]].item()
+            if nn_trans < nn_best_trans:
+                nn_best_trans, nn_best_tour = nn_trans, list(nn_tour)
+        init_trans = nn_best_trans
+        tour = list(nn_best_tour)
         node_path = self.tour_to_node_path(tour)
-        trans_cost = self._tour_transition_cost(tour)
-        total_cost = self.service_cost + trans_cost
+        total_cost = self.service_cost + init_trans
         tracker.update(total_cost)
         if verbose:
-            print(f"  初始路径: {len(tour)} 条边")
+            print(f"  [贪心NN] 初始路径: {len(tour)} 条边, "
+                  f"转移代价={init_trans:.1f}")
             print(f"  服务代价(固定): {self.service_cost:.1f}")
-            print(f"  转移代价(可优化): {trans_cost:.1f}")
             print(f"  总成本: {total_cost:.1f}")
             print(f"  节点路径前10步: {node_path[:10]}")
         log.append(('ERFM_INIT', total_cost, tracker.elapsed()))
@@ -1480,21 +1512,60 @@ class BaselineDHAN:
             print(f"  转移代价: {best_trans:.1f}")
             print(f"  总成本: {init_total:.1f}")
 
+        # ★ 修复: Baseline 真实验逃逸处理——在排除封锁边后重新运行贪心NN
         escape_count = 0
+        cur_tour = list(best_tour)
+        cur_trans = best_trans
         for event in (congestion_events or []):
             for e in event.get('edges', []):
                 self.env.closed_edges.add(tuple(e))
+            # 找出当前路径中被封锁的边
             blocked_lids = set()
             for lid in range(N):
                 u, v, _, _ = self.lg.lid2edge[lid]
                 if (u, v) in self.env.closed_edges:
                     blocked_lids.add(lid)
-            for lid in best_tour:
-                if lid in blocked_lids:
-                    escape_count += 1
-                    break
+            affected = [lid for lid in cur_tour if lid in blocked_lids]
+            if not affected:
+                continue
+            escape_count += len(affected)
+            # 在排除封锁边后重新运行贪心最近邻
+            available = [lid for lid in range(N)
+                         if lid not in blocked_lids]
+            if len(available) < 2:
+                continue
+            # 多起点贪心NN重规划
+            re_best_tour, re_best_trans = None, float('inf')
+            re_starts = random.sample(available, min(5, len(available)))
+            for start in re_starts:
+                unvisited = set(available)
+                cur = start
+                unvisited.remove(cur)
+                tour = [cur]
+                while unvisited:
+                    nearest, min_c = None, float('inf')
+                    for nb in unvisited:
+                        c = TC[cur, nb].item()
+                        if c < min_c:
+                            min_c, nearest = c, nb
+                    if nearest is None:
+                        break
+                    tour.append(nearest)
+                    unvisited.remove(nearest)
+                    cur = nearest
+                trans = sum(TC[tour[i], tour[i + 1]].item()
+                            for i in range(len(tour) - 1))
+                if len(tour) > 1:
+                    trans += TC[tour[-1], tour[0]].item()
+                if trans < re_best_trans:
+                    re_best_trans, re_best_tour = trans, list(tour)
+            if re_best_tour is not None:
+                cur_tour = re_best_tour
+                cur_trans = re_best_trans
+                new_total = self.service_cost + cur_trans
+                tracker.update(new_total)
 
-        final_trans = best_trans * (1.0 + 0.15 * escape_count)
+        final_trans = cur_trans
         final_total = self.service_cost + final_trans
         tracker.update(final_total)
 
