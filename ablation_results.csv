@@ -1,0 +1,4 @@
+Configuration,ERFM,SA_DGWN,LHH,Total_Cost,AOCC,Escape_Count
+Full_LE_DEGN,True,True,True,27598.5,0.5387,3
+ERFM_Only,True,False,False,70674.0,0.0,0
+ERFM_LHH,True,False,True,33761.8,0.2987,3

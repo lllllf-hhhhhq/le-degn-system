@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+*.egg
+.eggs/
+
+# Node
+node_modules/
+package-lock.json
+
+# Environment / portable
+python-portable/
+python-embed.zip
+
+# Large binaries / temp
+*.zip
+*.7z
+
+# Screenshots not related to paper
+app_screenshots/
+paper_screenshots/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Generated figures (keep in repo only if final)
+# paper_figures/
+# paper_figures_english/

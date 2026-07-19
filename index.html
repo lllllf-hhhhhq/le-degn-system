@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>康多多案例核心数据图表</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 20px 0;
+        }
+        /* 确保图表容器有绝对的最小高度和响应式高度 */
+        .secure-chart-container {
+            position: relative;
+            width: 100%;
+            height: 45vh;
+            min-height: 320px;
+            max-height: 500px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased">
+
+    <div class="max-w-4xl mx-auto px-4 space-y-8">
+        
+        <!-- 头部说明 -->
+        <div class="text-center mb-10">
+            <h1 class="text-3xl font-extrabold text-blue-800 mb-2">康多多案例数据可视化展示</h1>
+            <p class="text-slate-500">组员A：企业痛点与转型成果数据提炼</p>
+        </div>
+
+        <!-- 图表 1：痛点分析饼图 -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 border-t-4 border-orange-500">
+            <div class="text-center mb-6">
+                <span class="text-4xl mb-2 block">💸</span>
+                <h2 class="text-xl font-bold text-slate-800">传统公域模式下的利润困境剖析</h2>
+                <p class="text-sm text-slate-500 mt-2">（传统电商模式下企业各项成本结构预估）</p>
+            </div>
+            
+            <!-- 核心：安全的图表容器 -->
+            <div class="secure-chart-container w-full md:w-4/5">
+                <canvas id="painPointChart"></canvas>
+            </div>
+            
+            <div class="mt-6 bg-orange-50 p-4 rounded-lg border border-orange-100 text-center">
+                <p class="text-sm text-orange-800"><strong>痛点结论：</strong> 高达 35% 的营收被“公域流量推广与竞价”吞噬，企业利润空间极度压缩。</p>
+            </div>
+        </div>
+
+        <!-- 图表 2：成果对比柱状图 -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 border-t-4 border-blue-500">
+            <div class="text-center mb-6">
+                <span class="text-4xl mb-2 block">📈</span>
+                <h2 class="text-xl font-bold text-slate-800">“公域+私域”转型前后关键指标对比</h2>
+                <p class="text-sm text-slate-500 mt-2">（展现多渠道协同模式对获客成本和复购率的根本改善）</p>
+            </div>
+            
+            <!-- 核心：安全的图表容器 -->
+            <div class="secure-chart-container">
+                <canvas id="outcomeChart"></canvas>
+            </div>
+
+            <div class="mt-6 bg-blue-50 p-4 rounded-lg border border-blue-100 text-center">
+                <p class="text-sm text-blue-800"><strong>成果结论：</strong> 通过私域沉淀与裂变，单客获客成本大幅下降，而老客户二次复购率实现了跨越式提升。</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 严格控制的执行脚本 -->
+    <script>
+        // 必须等待 DOM 完全加载后再初始化图表，防止 Canvas 节点找不到或尺寸为 0
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // 按照要求配置的多行提示词处理逻辑
+            const tooltipConfig = {
+                callbacks: {
+                    title: function(tooltipItems) {
+                        const item = tooltipItems[0];
+                        let label = item.chart.data.labels[item.dataIndex];
+                        if (Array.isArray(label)) {
+                            return label.join(' ');
+                        } else {
+                            return label;
+                        }
+                    }
+                }
+            };
+
+            // ==========================================
+            // 图表 1: 痛点分析环形图
+            // ==========================================
+            const donutCanvas = document.getElementById('painPointChart');
+            if (donutCanvas) {
+                const donutCtx = donutCanvas.getContext('2d');
+                new Chart(donutCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: [
+                            '平台基础佣金与手续费', 
+                            '流量推广与竞价获客', // 缩短文本以适应显示
+                            '商品采购与物流履约', 
+                            '企业最终可用净利润'
+                        ],
+                        datasets: [{
+                            data: [15, 35, 35, 15],
+                            backgroundColor: [
+                                'rgba(59, 130, 246, 0.8)',  // Blue
+                                'rgba(249, 115, 22, 0.9)',  // Orange (突出显示痛点)
+                                'rgba(148, 163, 184, 0.6)', // Slate
+                                'rgba(16, 185, 129, 0.8)'   // Emerald
+                            ],
+                            borderColor: '#ffffff',
+                            borderWidth: 3,
+                            hoverOffset: 10 // 悬停交互放大效果
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false, // 必须为 false 才能适应父容器高度
+                        cutout: '55%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { 
+                                    padding: 20, 
+                                    font: { family: "'Segoe UI', sans-serif", size: 13 } 
+                                }
+                            },
+                            tooltip: tooltipConfig
+                        },
+                        animation: {
+                            animateScale: true,
+                            animateRotate: true
+                        }
+                    }
+                });
+            }
+
+            // ==========================================
+            // 图表 2: 转型成果双轴柱状图
+            // ==========================================
+            const barCanvas = document.getElementById('outcomeChart');
+            if (barCanvas) {
+                // 标签过长，处理成数组进行换行显示
+                const barLabels = [
+                    ['传统公域依赖期', '(2021年之前)'], 
+                    ['公私域结合初期', '(转型摸索期)'], 
+                    ['公私域协同发力期', '(目前运营状态)']
+                ];
+
+                const barCtx = barCanvas.getContext('2d');
+                new Chart(barCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: barLabels,
+                        datasets: [
+                            {
+                                label: '单客获客成本 (趋势指数)',
+                                data: [100, 75, 40],
+                                backgroundColor: 'rgba(249, 115, 22, 0.85)', // 橙色代表成本下降
+                                borderRadius: 6,
+                                barPercentage: 0.6,
+                                categoryPercentage: 0.8
+                            },
+                            {
+                                label: '客户二次复购率 (%)',
+                                data: [15, 35, 65],
+                                backgroundColor: 'rgba(59, 130, 246, 0.85)', // 蓝色代表增长
+                                borderRadius: 6,
+                                barPercentage: 0.6,
+                                categoryPercentage: 0.8
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false, // 必须为 false 才能适应父容器高度
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { 
+                                    color: 'rgba(226, 232, 240, 0.8)', // 淡色网格线
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    font: { family: "'Segoe UI', sans-serif" }
+                                }
+                            },
+                            x: {
+                                grid: { 
+                                    display: false,
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    font: { family: "'Segoe UI', sans-serif", size: 13 }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 20,
+                                    font: { family: "'Segoe UI', sans-serif", size: 14 }
+                                }
+                            },
+                            tooltip: tooltipConfig
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
