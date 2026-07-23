@@ -285,11 +285,17 @@ class LEDEGNSystem:
             if affected and affected_node is not None:
                 if verbose:
                     print(f"  [检测] 路径受阻! 节点={affected_node}")
-                self.state = 'ESCAPE'
-                escape_path = self.lhh.escape(affected_node,
-                                              self.env.closed_edges, verbose)
-                log.append(('LHH_ESCAPE', len(escape_path), tracker.elapsed()))
-                self.state = 'REPLAN'
+                
+                if self.lhh is not None:
+                    self.state = 'ESCAPE'
+                    escape_path = self.lhh.escape(affected_node,
+                                                  self.env.closed_edges, verbose)
+                    log.append(('LHH_ESCAPE', len(escape_path), tracker.elapsed()))
+                    self.state = 'REPLAN'
+                else:
+                    if verbose:
+                        print("  [无LHH] 直接ERFM重规划...")
+                    self.state = 'REPLAN'
                 if verbose:
                     print("\n  [ERFM] 重新规划...")
                 # 重规划时排除被封锁的边, 使用更高温度
@@ -349,7 +355,7 @@ class LEDEGNSystem:
             'init_transition': self._tour_transition_cost(tour),
             'final_transition': post_opt_trans,
             'aocc': aocc, 'trajectory': tracker.trajectory, 'log': log,
-            'escape_count': self.lhh.escape_count,
+            'escape_count': self.lhh.escape_count if self.lhh else 0,
             'lower_bound': L, 'upper_bound': U,
             'final_tour': optimized,
             'node_path': self.tour_to_node_path(optimized),
@@ -363,7 +369,7 @@ class LEDEGNSystem:
             print(f"  最终转移代价:      {post_opt_trans:.1f}")
             print(f"  最终总成本:        {opt_total:.1f}")
             print(f"  AOCC:              {aocc:.4f}")
-            print(f"  逃逸次数:          {self.lhh.escape_count}")
+            print(f"  逃逸次数:          {self.lhh.escape_count if self.lhh else 0}")
             print(f"  总耗时:            {tracker.elapsed():.2f}s")
         return result
 

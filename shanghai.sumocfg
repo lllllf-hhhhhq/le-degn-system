@@ -4,7 +4,7 @@
   <input>
     <net-file value="shanghai.net.xml"/>
     <!-- 全天需求文件：基础24h流量 + 早晚高峰增量 -->
-    <route-files value="trips.rou.xml,trips_peak_morning.rou.xml,trips_peak_evening.rou.xml"/>
+    <route-files value="trips.rou.xml"/>
   </input>
   <time>
     <begin value="0"/>
