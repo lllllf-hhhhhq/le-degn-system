@@ -55,6 +55,12 @@ class SpatioTemporalBlock(nn.Module):
 
 
 class SADGWN(nn.Module):
+    """时空图卷积拥堵预测器。
+
+    两种模式:
+      - 标准模式: out_proj → Sigmoid, 输出拥堵概率 [0,1]
+      - 回归模式: reg_head → Linear, 输出速度预测, 外部转拥堵概率
+    """
     def __init__(self, feat_dim=2, hidden=32, n_blocks=2):
         super().__init__()
         self.blocks = nn.ModuleList(
@@ -62,8 +68,21 @@ class SADGWN(nn.Module):
              for i in range(n_blocks)])
         self.out_proj = nn.Sequential(
             nn.Linear(hidden, hidden), nn.ReLU(),
-            nn.Linear(hidden, 1), nn.Sigmoid())  # Sigmoid -> [0,1]
+            nn.Linear(hidden, 1), nn.Sigmoid())  # 标准: Sigmoid -> [0,1]
+        self.reg_head = nn.Linear(hidden, 1)       # 回归: 速度预测
         self.hidden = hidden
+        self._use_regression = False
+        self._sumo_speeds = None                   # (N, T) SUMO 速度数据
+        self._adj = None
+
+    def enable_regression_mode(self):
+        """切换为回归模式 (速度预测 + 外部转拥堵)。"""
+        self._use_regression = True
+
+    def set_sumo_data(self, speeds: 'torch.Tensor', adj: 'torch.Tensor'):
+        """注入 SUMO 速度数据和邻接矩阵。"""
+        self._sumo_speeds = speeds
+        self._adj = adj.clone()
 
     def forward(self, x, adj):
         h = x
@@ -74,7 +93,65 @@ class SADGWN(nn.Module):
             h_out = blk(h if h.dim() == 3 else
                         h.unsqueeze(1).expand(-1, x.size(1), -1), adj)
             h = h_out
-        return self.out_proj(h).squeeze(-1)
+        if self._use_regression:
+            return self.reg_head(h).squeeze(-1)  # (N,) 速度预测
+        return self.out_proj(h).squeeze(-1)      # (N,) 拥堵概率
+
+    def predict_congestion_from_sumo(self, history_steps=12, scale=3.5):
+        """使用 SUMO 数据预测拥堵: 预测速度 → 比较实际速度 → 拥堵概率。
+
+        返回: (N,) tensor, 拥堵概率 [0,1]
+        """
+        if self._sumo_speeds is None or self._adj is None:
+            return torch.zeros(self._sumo_speeds.size(0) if self._sumo_speeds is not None else 1)
+        N, T_full = self._sumo_speeds.shape
+        if T_full < history_steps + 1:
+            return torch.zeros(N)
+
+        # 取最近 history_steps 步作为输入
+        import random
+        t_start = random.randint(0, T_full - history_steps - 1)
+        x = self._sumo_speeds[:, t_start:t_start+history_steps].unsqueeze(-1)  # (N, W, 1)
+        # 拼接流量特征（用速度近似）
+        flow = self._sumo_speeds[:, t_start:t_start+history_steps].unsqueeze(-1) * 0.5
+        x = torch.cat([x, flow], dim=-1)  # (N, W, 2)
+
+        # 预测下一步速度
+        with torch.no_grad():
+            pred_speed = self.forward(x, self._adj)  # (N,)
+            true_speed = self._sumo_speeds[:, t_start+history_steps]  # (N,)
+
+        # 速度下降 → 拥堵概率
+        speed_drop = (true_speed - pred_speed) / true_speed.clamp(min=0.01)
+        congestion = torch.sigmoid(speed_drop * scale)
+        return congestion
+
+    @classmethod
+    def from_sumo_checkpoint(cls, checkpoint_path: str, sumo_npy_path: str,
+                             feat_dim=2, hidden=32, n_blocks=2):
+        """从 SUMO 训练权重创建并加载模型 (回归模式)。
+
+        参数:
+            checkpoint_path: sadgwn_sumo_trained.pt 路径
+            sumo_npy_path:   traffic_tensor.npy 路径
+        返回: SADGWN 实例, 已加载权重并处于回归模式
+        """
+        import numpy as np
+        model = cls(feat_dim=feat_dim, hidden=hidden, n_blocks=n_blocks)
+        model.enable_regression_mode()
+
+        # 加载 SUMO 速度数据
+        arr = np.load(sumo_npy_path)  # (N, T, 2)
+        speeds = torch.from_numpy(arr[:, :, 0]).float()  # (N, T)
+        model._sumo_speeds = speeds
+
+        # 加载权重
+        state_dict = torch.load(checkpoint_path, map_location='cpu')
+        # 兼容不同格式的 state_dict
+        model.load_state_dict(state_dict, strict=False)
+        model.eval()
+
+        return model
 
 
 class TrafficDataGenerator:

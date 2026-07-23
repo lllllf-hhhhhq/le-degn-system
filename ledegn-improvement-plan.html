@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LE-DEGN 下一步最优计划</title>
+<style>
+  :root {
+    --bg: #FAFAFB; --bg2: #FFFFFF; --ink: #1A1A2E; --muted: #6B7280;
+    --rule: #E5E7EB; --accent: #2563EB; --accent2: #0D9488;
+    --warn: #D97706; --danger: #DC2626; --success: #059669;
+    --font: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 15px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+  .container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+  .cover { background: var(--bg2); border-bottom: 1px solid var(--rule); padding: 40px 0 32px; margin-bottom: 36px; }
+  .cover h1 { font-size: 26px; font-weight: 700; line-height: 1.35; margin-bottom: 8px; }
+  .cover .sub { font-size: 15px; color: var(--muted); }
+  section { margin-bottom: 40px; }
+  h2 { font-size: 20px; font-weight: 700; padding-bottom: 8px; border-bottom: 2px solid var(--accent); margin-bottom: 16px; }
+  h3 { font-size: 16px; font-weight: 600; margin: 22px 0 8px; }
+  p { margin-bottom: 12px; }
+  strong { font-weight: 600; }
+  code { font-family: "JetBrains Mono", "Consolas", monospace; font-size: 13px; background: var(--bg); padding: 1px 5px; border-radius: 3px; border: 1px solid var(--rule); color: var(--accent); }
+  pre { background: #1E1E2E; color: #CDD6F4; font-family: "JetBrains Mono", "Consolas", monospace; font-size: 12px; line-height: 1.5; padding: 14px 18px; border-radius: 8px; overflow-x: auto; margin: 12px 0; white-space: pre-wrap; word-break: break-all; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 14px 0; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
+  thead th { background: var(--bg); font-weight: 600; text-align: left; padding: 9px 12px; border-bottom: 2px solid var(--rule); }
+  tbody td { padding: 9px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  tbody tr:last-child td { border-bottom: none; }
+  .callout { padding: 12px 16px; border-radius: 8px; margin: 14px 0; font-size: 14px; line-height: 1.6; }
+  .callout.info { background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF; }
+  .callout.warn { background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; }
+  .callout.success { background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; }
+  .callout.danger { background: #FEF2F2; border: 1px solid #FECACA; color: #991B1B; }
+  .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; margin-right: 6px; vertical-align: middle; }
+  .tag.pass { background: #D1FAE5; color: #065F46; }
+  .tag.warn { background: #FEF3C7; color: #92400E; }
+  .tag.fail { background: #FEE2E2; color: #991B1B; }
+  .tag.info { background: #DBEAFE; color: #1E40AF; }
+  .tag.todo { background: #EDE9FE; color: #5B21B6; }
+  ul { margin: 8px 0 12px 22px; }
+  li { margin-bottom: 5px; }
+  footer { margin-top: 44px; padding: 28px 0 36px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--muted); }
+  .phase-bar { display: flex; gap: 4px; margin-bottom: 20px; }
+  .phase-step { flex: 1; text-align: center; padding: 10px 6px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+  .phase-step.c { background: #D1FAE5; color: #065F46; }
+  .phase-step.p { background: #DBEAFE; color: #1E40AF; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="container">
+    <h1>LE-DEGN 下一步最优计划<br>现状审查 &amp; 改进路线图</h1>
+    <p class="sub">基于已完成 6 阶段 SUMO 管道的审计结果，制定 5 个优先改进阶段</p>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ═══════════════════════════════════════════════════ -->
+<section>
+<h2>1 现状审计：已完成的工作</h2>
+
+<div class="phase-bar">
+  <div class="phase-step c">P1<br>OSM→SUMO</div>
+  <div class="phase-step c">P2<br>交通需求</div>
+  <div class="phase-step c">P3<br>24h 仿真</div>
+  <div class="phase-step c">P4<br>数据预处理</div>
+  <div class="phase-step c">P5<br>SA-DGWN</div>
+  <div class="phase-step c">P6<br>消融实验</div>
+</div>
+
+<table>
+<thead><tr><th>阶段</th><th>产出</th><th>状态</th><th>备注</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><code>shanghai.net.xml</code> (855 节点/1769 边)</td><td><span class="tag pass">完成</span></td><td>netconvert 成功</td></tr>
+<tr><td>2</td><td><code>trips.rou.xml</code> (34714 veh/24h), <code>shanghai.sumocfg</code></td><td><span class="tag pass">完成</span></td><td>period=1.0, binomial=4</td></tr>
+<tr><td>3</td><td><code>edge_data.xml</code> (59.7 MB, 288 间隔)</td><td><span class="tag pass">完成</span></td><td>~34 min 仿真</td></tr>
+<tr><td>4</td><td><code>edge_mapping.json</code> + <code>traffic_tensor.npy</code></td><td><span class="tag warn">需改进</span></td><td>匹配率 43.2%</td></tr>
+<tr><td>5</td><td><code>sadgwn_sumo_trained.pt</code> (回归模型)</td><td><span class="tag warn">需集成</span></td><td>MSE 0.000276, σmax 0.88</td></tr>
+<tr><td>6</td><td>消融实验 (4 组配置)</td><td><span class="tag fail">需重做</span></td><td>设计存在缺陷</td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<section>
+<h2>2 当前问题诊断</h2>
+
+<div class="callout danger">
+<strong>问题 1 — 消融设计缺陷：</strong>ERFM only 配置无拥堵事件注入，而其他配置有。导致 ERFM only 的 Cost 最低（197K vs 253-268K），不具备可比性。所有配置必须面对相同的拥堵场景。
+</div>
+
+<div class="callout warn">
+<strong>问题 2 — AOCC 计算失真：</strong>3/4 配置的 AOCC 完全相同（0.9472），说明 L/U 边界计算有问题或所有实验的收敛轨迹几乎无差别。
+</div>
+
+<div class="callout warn">
+<strong>问题 3 — 边映射覆盖率不足：</strong>仅 764/1769 (43.2%) 的 SUMO 边通过 OSM 节点 ID 匹配成功。坐标体系差异（SUMO 本地投影 vs LE-DEGN UTM）导致空间匹配失败，而纯拓扑匹配受 netconvert 简化影响。
+</div>
+
+<div class="callout warn">
+<strong>问题 4 — SA-DGWN 未正式集成：</strong>训练模型使用了临时的 <code>reg_head</code>，与标准 SADGWN 的 <code>out_proj+Sigmoid</code> 不一致。消融脚本中手动计算拥堵，未通过 <code>LEDEGNSystem.predict_congestion()</code>。
+</div>
+
+<div class="callout info">
+<strong>问题 5 — 缺少制度化验证：</strong>未做多 seed 重复实验，结果受随机性影响大。无可视化报告，无结构化实验结果文件。
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<section>
+<h2>3 最优改进计划（5 个阶段）</h2>
+
+<h3>阶段 A — 提升边映射覆盖率 (目标 &gt; 70%)</h3>
+<p><strong>策略：</strong>OSM 节点 ID 拓扑匹配 + 坐标归一化回退匹配</p>
+<ol>
+  <li>将 SUMO 坐标从本地投影反算回 WGS84 (lat/lon)，再投影到 UTM 与 LE-DEGN 对齐</li>
+  <li>先做拓扑匹配（已有 43.2%），剩余未匹配边做坐标最近邻（阈值 30m）</li>
+  <li>重建 <code>traffic_tensor.npy</code> 和 <code>edge_mapping.json</code></li>
+  <li>验证：匹配率 > 70%，时间方差 > 0.001</li>
+</ol>
+
+<h3>阶段 B — SA-DGWN 模型规范化集成</h3>
+<p><strong>策略：</strong>创建 <code>SUMOCongestionPredictor</code> 包装类，适配 SADGWN 的标准接口</p>
+<ol>
+  <li>修改 <code>sadgwn.py</code> 增加 <code>predict_speed_regression()</code> 方法和 <code>load_sumo_weights()</code></li>
+  <li>在 <code>LEDEGNSystem.predict_congestion()</code> 中集成 SUMO 数据源</li>
+  <li>验证：<code>predict_congestion()</code> 输出 σ_max > 0.7 且 >0.5 的边 ≥ 5%</li>
+</ol>
+
+<h3>阶段 C — 重新设计消融协议</h3>
+<p><strong>策略：</strong>统一拥堵场景，仅改变应对机制</p>
+<table>
+<thead><tr><th>配置</th><th>拥堵事件</th><th>拥堵预测</th><th>重规划逻辑</th></tr></thead>
+<tbody>
+<tr><td><strong>A (ERFM only)</strong></td><td>3 个 _default_events_real</td><td>无</td><td>ERFM 采样重规划（无预测能力）</td></tr>
+<tr><td><strong>B (ERFM+SA-DGWN)</strong></td><td>3 个 _default_events_real</td><td>SUMO 模型</td><td>预测拥堵边 → 提前规避</td></tr>
+<tr><td><strong>C (ERFM+LHH)</strong></td><td>3 个 _default_events_real</td><td>无</td><td>LHH 语言启发式逃逸</td></tr>
+<tr><td><strong>D (Full)</strong></td><td>3 个 _default_events_real</td><td>SUMO 模型</td><td>SA-DGWN 预测 + LHH 逃逸</td></tr>
+</tbody>
+</table>
+<p><strong>关键保证：</strong>四组配置使用完全相同的初始贪心 NN 路径、相同的 3 个拥堵事件、相同的 30s time_budget。</p>
+
+<h3>阶段 D — 多 seed 制度化验证</h3>
+<p><strong>策略：</strong>5 个随机 seed × 4 配置 = 20 次实验</p>
+<ol>
+  <li>seeds = [42, 123, 456, 789, 1024]</li>
+  <li>每 seed 固定初始路径和拥堵事件</li>
+  <li>收集：final_cost, AOCC, replan_count, escape_count, congestion_detection_rate</li>
+  <li>输出 mean ± std 表格和箱线图</li>
+</ol>
+
+<h3>阶段 E — 生成最终报告并发布</h3>
+<p><strong>策略：</strong>HTML 报告 + GitHub PR 合并</p>
+<ol>
+  <li>使用 <code>html-report</code> 技能生成含图表的完整实验报告</li>
+  <li>报告内容：方法回顾 → 实验设计 → 消融结果 → 组件贡献分析 → 结论</li>
+  <li>Git 提交所有最终产出 → 推送 → 合并 PR #1</li>
+</ol>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<section>
+<h2>4 成功标准</h2>
+
+<table>
+<thead><tr><th>指标</th><th>当前值</th><th>目标值</th><th>阶段</th></tr></thead>
+<tbody>
+<tr><td>边映射率</td><td>43.2%</td><td>&gt; 70%</td><td>A</td></tr>
+<tr><td>时间方差</td><td>0.0048</td><td>&gt; 0.001 ✓</td><td>A</td></tr>
+<tr><td>sigmoid max</td><td>0.88</td><td>&gt; 0.7 ✓</td><td>B</td></tr>
+<tr><td>&gt;0.5 边比例</td><td>6%</td><td>&ge; 5% ✓</td><td>B</td></tr>
+<tr><td>SA-DGWN Cost 改善</td><td>未量化</td><td>Config B vs A 差值 &gt; 2%</td><td>C-D</td></tr>
+<tr><td>Full vs ERFM+LHH 改善</td><td>未量化</td><td>AOCC 差值 &gt; 0</td><td>C-D</td></tr>
+<tr><td>多 seed 稳定性</td><td>无</td><td>Cost std/mean &lt; 5%</td><td>D</td></tr>
+</tbody>
+</table>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<section>
+<h2>5 时间预估</h2>
+
+<table>
+<thead><tr><th>阶段</th><th>预估耗时</th><th>关键依赖</th></tr></thead>
+<tbody>
+<tr><td>A — 边映射改进</td><td>~15 min</td><td>sumolib, pyproj</td></tr>
+<tr><td>B — 模型集成</td><td>~10 min</td><td>sadgwn.py 修改</td></tr>
+<tr><td>C — 消融重设计</td><td>~30 min</td><td>4 组 × ERFM 训练 (100 ep)</td></tr>
+<tr><td>D — 多 seed 验证</td><td>~60 min</td><td>20 次实验 (含 ERFM×20)</td></tr>
+<tr><td>E — 报告生成</td><td>~15 min</td><td>html-report skill</td></tr>
+<tr><td><strong>合计</strong></td><td><strong>~2-2.5 h</strong></td><td></td></tr>
+</tbody>
+</table>
+
+<div class="callout success">
+<strong>执行策略：</strong>阶段 A→B 可以并行准备脚本，C→D 串行执行（含训练耗时），E 为最终交付。每完成一个阶段汇报结果。
+</div>
+
+</section>
+
+</div>
+
+<footer>
+  <div class="container">
+    <p>LE-DEGN 改进路线图 · v2.0 · 2026-07-24</p>
+    <p>基于 SUMO 集成管道 (Phases 1-6) 审计结果</p>
+  </div>
+</footer>
+</body>
+</html>
