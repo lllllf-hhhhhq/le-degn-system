@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<additional xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/additional_file.xsd">
+
+    <!-- 早高峰 7:00-9:00 (25200-32400) + 晚高峰 17:00-19:00 (61200-68400) -->
+
+    <rerouter id="rr_peak" edges="39763700 24576922#0 515040940 666886085 178699051#1 178702261">
+        <interval begin="25200" end="32400">
+            <closingReroute id="39763700"/>
+            <closingReroute id="24576922#0"/>
+            <closingReroute id="515040940"/>
+            <closingReroute id="666886085"/>
+            <closingReroute id="178699051#1"/>
+            <closingReroute id="178702261"/>
+        </interval>
+        <interval begin="61200" end="68400">
+            <closingReroute id="39763700"/>
+            <closingReroute id="24576922#0"/>
+            <closingReroute id="515040940"/>
+            <closingReroute id="666886085"/>
+            <closingReroute id="178699051#1"/>
+            <closingReroute id="178702261"/>
+        </interval>
+    </rerouter>
+
+</additional>

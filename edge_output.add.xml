@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<additional xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/additional_file.xsd">
+  <!-- 每 300 秒 (5 分钟) 采集一次边级数据，24 小时共 288 个时间步 -->
+  <edgeData id="edge_output" freq="300" file="edge_data.xml"
+            excludeEmpty="true" />
+</additional>
