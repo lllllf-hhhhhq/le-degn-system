@@ -1,0 +1,142 @@
+{
+  "A_erfm_s42": {
+    "cfg": "A_erfm",
+    "seed": 42,
+    "cost": 237462.33110527898,
+    "aocc": 0.9605741764059984,
+    "sigma_exposure": 0.3211811311542988
+  },
+  "B_std2opt_s42": {
+    "cfg": "B_std2opt",
+    "seed": 42,
+    "cost": 265831.0799570551,
+    "aocc": 0.9605741764059984,
+    "sigma_exposure": 0.3211811311542988
+  },
+  "C_guided_s42": {
+    "cfg": "C_guided",
+    "seed": 42,
+    "cost": 253351.73899369146,
+    "aocc": 0.9605741764059984,
+    "sigma_exposure": 0.3211811311542988
+  },
+  "D_guided_polish_s42": {
+    "cfg": "D_guided_polish",
+    "seed": 42,
+    "cost": 253137.42617325688,
+    "aocc": 0.9605741764059984,
+    "sigma_exposure": 0.3211811311542988
+  },
+  "A_erfm_s123": {
+    "cfg": "A_erfm",
+    "seed": 123,
+    "cost": 236110.65384297277,
+    "aocc": 0.9617443101590205,
+    "sigma_exposure": 0.32364744146664937
+  },
+  "B_std2opt_s123": {
+    "cfg": "B_std2opt",
+    "seed": 123,
+    "cost": 266592.1252308359,
+    "aocc": 0.9617443101590205,
+    "sigma_exposure": 0.32364744146664937
+  },
+  "C_guided_s123": {
+    "cfg": "C_guided",
+    "seed": 123,
+    "cost": 270316.43910412694,
+    "aocc": 0.9617443101590205,
+    "sigma_exposure": 0.32364744146664937
+  },
+  "D_guided_polish_s123": {
+    "cfg": "D_guided_polish",
+    "seed": 123,
+    "cost": 272138.3986835947,
+    "aocc": 0.9617443101590205,
+    "sigma_exposure": 0.32364744146664937
+  },
+  "A_erfm_s456": {
+    "cfg": "A_erfm",
+    "seed": 456,
+    "cost": 235836.94996361638,
+    "aocc": 0.9619812529237606,
+    "sigma_exposure": 0.3143599667896827
+  },
+  "B_std2opt_s456": {
+    "cfg": "B_std2opt",
+    "seed": 456,
+    "cost": 242200.65830712224,
+    "aocc": 0.9619812529237606,
+    "sigma_exposure": 0.3143599667896827
+  },
+  "C_guided_s456": {
+    "cfg": "C_guided",
+    "seed": 456,
+    "cost": 257087.905575799,
+    "aocc": 0.9619812529237606,
+    "sigma_exposure": 0.3143599667896827
+  },
+  "D_guided_polish_s456": {
+    "cfg": "D_guided_polish",
+    "seed": 456,
+    "cost": 256334.68843560125,
+    "aocc": 0.9619812529237606,
+    "sigma_exposure": 0.3143599667896827
+  },
+  "A_erfm_s789": {
+    "cfg": "A_erfm",
+    "seed": 789,
+    "cost": 238116.15132527257,
+    "aocc": 0.9600081706521443,
+    "sigma_exposure": 0.3179644367347161
+  },
+  "B_std2opt_s789": {
+    "cfg": "B_std2opt",
+    "seed": 789,
+    "cost": 243069.06483654882,
+    "aocc": 0.9600081706521443,
+    "sigma_exposure": 0.3179644367347161
+  },
+  "C_guided_s789": {
+    "cfg": "C_guided",
+    "seed": 789,
+    "cost": 256730.93991570378,
+    "aocc": 0.9600081706521443,
+    "sigma_exposure": 0.3179644367347161
+  },
+  "D_guided_polish_s789": {
+    "cfg": "D_guided_polish",
+    "seed": 789,
+    "cost": 260281.9182043543,
+    "aocc": 0.9600081706521443,
+    "sigma_exposure": 0.3179644367347161
+  },
+  "A_erfm_s1024": {
+    "cfg": "A_erfm",
+    "seed": 1024,
+    "cost": 237454.88429741765,
+    "aocc": 0.9605806230345562,
+    "sigma_exposure": 0.33049478717148306
+  },
+  "B_std2opt_s1024": {
+    "cfg": "B_std2opt",
+    "seed": 1024,
+    "cost": 265651.3367071619,
+    "aocc": 0.9605806230345562,
+    "sigma_exposure": 0.33049478717148306
+  },
+  "C_guided_s1024": {
+    "cfg": "C_guided",
+    "seed": 1024,
+    "cost": 262782.59773735906,
+    "aocc": 0.9605806230345562,
+    "sigma_exposure": 0.33049478717148306
+  },
+  "D_guided_polish_s1024": {
+    "cfg": "D_guided_polish",
+    "seed": 1024,
+    "cost": 256002.20365815068,
+    "aocc": 0.9605806230345562,
+    "sigma_exposure": 0.33049478717148306
+  }
+}
